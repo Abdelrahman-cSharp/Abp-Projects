@@ -19,7 +19,7 @@ The solution comes with a default configuration that works out of the box. Howev
 
 * Run `abp install-libs` command on your solution folder to install client-side package dependencies. This step is automatically done when you create a new solution, if you didn't especially disabled it. However, you should run it yourself if you have first cloned this solution from your source control, or added a new client-side package dependency to your solution.
 * Change Server in the 'appsettings.json' in 'Quizzes.Blazor' and 'appsettings.jso in 'Quizzes.DbMigrator'
-* Open 'Quizzes.EntityFrameworkCore' and the following commands
+* Open 'Quizzes.EntityFrameworkCore' Terminal and run the following commands
 1."dotnet ef migrations add QuizzesTables"
 2."dotnet ef database update"
 * Run `Quizzes.DbMigrator` to create the initial database. This step is also automatically done when you create a new solution, if you didn't especially disabled it. This should be done in the first run. It is also needed if a new database migration is added to the solution later.

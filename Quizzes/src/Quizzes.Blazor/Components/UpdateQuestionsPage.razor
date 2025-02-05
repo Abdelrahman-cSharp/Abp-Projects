@@ -1,0 +1,75 @@
+﻿@page "/quizzes/edit-questions/{QuizId:int}"
+@using Quizzes.Blazor.Components.QuestionsComponents
+@using Volo.Abp.Application.Dtos
+@using global::Quizzes.Questions
+@inject NavigationManager Navigation
+@inherits AbpCrudPageBase<IQuizAppService, QuizDto, int, PagedAndSortedResultRequestDto, CreateUpdateQuizDto>
+
+@if (quiz == null) return;
+
+<Layout Height="Height.Is100">
+    <LayoutHeader Position="Position.Sticky" Fixed Background="Background.White" Padding="Padding.Is3">
+        <Div Flex="Flex.JustifyContent.Between">
+            <Heading TextColor="TextColor.Dark" TextSize="TextSize.Heading1" TextWeight="TextWeight.Bold">
+                @quiz.Title
+            </Heading>
+            <Button Color="Color.Primary" Clicked="@GoBack" TextSize="TextSize.Heading5">Back</Button>
+        </Div>
+    </LayoutHeader>
+
+    <LayoutContent Background="Background.Transparent" Height="Height.Is100" Overflow="Overflow.Auto">
+        <Divider/>
+        <Div Flex="Flex.JustifyContent.Between">
+            <Heading Size="HeadingSize.Is4">Multiple Choice Questions:-</Heading>
+
+            <AddMCQModal quiz="@quiz" />
+        </Div>
+
+        <Div>
+            @foreach (var mcq in quiz.MCQs)
+            {
+                <Div> <UpdateMCQComponent mcq="@mcq" /> </Div>
+            }
+            <Alert Color="Color.Warning" Visible="@(quiz.MCQs.Count == 0)">
+                <AlertMessage>No MCQ questions.</AlertMessage>  <CloseButton />
+            </Alert>
+        </Div>
+
+        <Divider />
+        <Div Flex="Flex.JustifyContent.Between">
+            <Heading Size="HeadingSize.Is4">True/False Questions:-</Heading>
+
+            <AddTFModal quiz="@quiz" />
+        </Div>
+
+        <Div>
+            @foreach (var tf in quiz.TFs)
+            {
+                <Div> <UpdateTFComponent tf="@tf" /> </Div>
+            }
+            <Alert Color="Color.Warning" Visible="@(quiz.TFs.Count == 0)">
+                <AlertMessage>No T/F questions.</AlertMessage>   <CloseButton />
+            </Alert>
+        </Div>
+
+    </LayoutContent>
+</Layout>
+
+
+@code {
+    [Parameter]
+    public int QuizId { get; set; }
+    public QuizDto? quiz { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        quiz = await AppService.GetAsync(QuizId);
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/quizzes");
+    }
+
+
+}

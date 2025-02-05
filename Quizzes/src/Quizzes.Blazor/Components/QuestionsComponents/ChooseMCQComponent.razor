@@ -1,0 +1,82 @@
+﻿@using Blazorise.Snackbar
+@using global::Quizzes.Questions
+@using Volo.Abp.Application.Dtos
+@inject NavigationManager Navigation
+@inherits AbpCrudPageBase<IMCQAppService, MCQDto, int, PagedAndSortedResultRequestDto, CreateUpdateMCQDto>
+
+@if (newmcq == null || mcq == null) return;
+
+
+<Card TextSize="TextSize.Heading4">
+    <CardHeader>
+        <Text Class="unselectable">@newmcq.Title</Text>
+    </CardHeader>
+
+    <CardBody>
+        <RadioGroup TValue="string" CheckedValueChanged="@Submit" Flex="Flex.Column">
+            <Radio Value="@newmcq.Choice1" Cursor="Cursor.Pointer">
+                <Text Class="unselectable">a. @newmcq.Choice1</Text>
+            </Radio>
+
+            <Radio Value="@newmcq.Choice2" Cursor="Cursor.Pointer">
+                <Text Class="unselectable">b. @newmcq.Choice2</Text>
+            </Radio>
+
+            <Radio Value="@newmcq.Choice3" Cursor="Cursor.Pointer">
+                <Text Class="unselectable">c. @newmcq.Choice3</Text>
+            </Radio>
+
+            <Radio Value="@newmcq.Choice4" Cursor="Cursor.Pointer">
+                <Text Class="unselectable">d. @newmcq.Choice4</Text>
+            </Radio>
+        </RadioGroup>
+    </CardBody>
+</Card>
+
+
+@code {
+    [Parameter]
+    public MCQDto? mcq { get; set; }
+
+
+    private CreateUpdateMCQDto newmcq = new CreateUpdateMCQDto();
+
+    protected override void OnParametersSet()
+    {
+        if (mcq == null) return;
+
+        newmcq = new CreateUpdateMCQDto
+            {
+                Title = mcq.Title,
+                Choice1 = mcq.Choice1,
+                Choice2 = mcq.Choice2,
+                Choice3 = mcq.Choice3,
+                Choice4 = mcq.Choice4,
+                CorrectAnswer = mcq.CorrectAnswer
+            };
+
+    }
+
+    private async void Submit(string value)
+    {
+        if (mcq == null) return;
+
+        newmcq.SelectedAnswer = value;
+
+        await AppService.UpdateAsync(mcq.Id, newmcq);
+    }
+
+}
+
+
+<style>
+
+    .unselectable {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+</style>

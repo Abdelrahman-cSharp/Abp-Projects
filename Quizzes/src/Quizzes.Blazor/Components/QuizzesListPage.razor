@@ -1,0 +1,51 @@
+﻿@page "/quizzes"
+@using global::Quizzes.Questions
+@using global::Quizzes.Blazor.Components.QuizzesComponents
+@using Volo.Abp.Application.Dtos
+@using Microsoft.Extensions.Localization
+@inherits AbpCrudPageBase<IQuizAppService, QuizDto, int, PagedAndSortedResultRequestDto, CreateUpdateQuizDto>
+
+
+
+<Layout Height="Height.Is100" Background="Background.White">
+    <LayoutHeader Background="Background.White" Padding="Padding.Is3">
+        <Div Flex="Flex.JustifyContent.Between">
+            <Heading Size="HeadingSize.Is1">Quizzes</Heading>
+            <AddQuizModal />
+        </Div>
+    </LayoutHeader>
+
+    <LayoutContent Height="Height.Is100" Flex="Flex.Wrap" Overflow="Overflow.Auto">
+        <Divider />
+        @if (quizzes != null)
+        {
+            @foreach (QuizDto quiz in quizzes)
+            {
+                <QuizBoxAndModal quiz="@quiz" />
+            }
+        }
+        else
+        {
+            <Strong>No Quizzes</Strong>
+        }
+    </LayoutContent>
+</Layout>
+
+
+@code {
+    private List<QuizDto> quizzes = new();
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadQuizzesAsync();
+        StateHasChanged();
+
+    }
+
+    private async Task LoadQuizzesAsync()
+    {
+        var result = await AppService.GetListAsync(new PagedAndSortedResultRequestDto { MaxResultCount = 1000 });
+        quizzes = result.Items.OrderByDescending(q => q.Id).ToList();
+    }
+
+}
+

@@ -1,0 +1,42 @@
+﻿
+
+<Button Color="Color.Primary" Clicked="@ShowModal" Size="Size.ExtraLarge">
+    Submit
+</Button>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader Flex="Flex.JustifyContent.Center" TextSize="TextSize.Heading4" TextColor="TextColor.Dark">
+            Are you sure you want to Submit Quiz?
+        </ModalHeader>
+
+        <ModalFooter Flex="Flex.JustifyContent.Center">
+            <Button Color="Color.Primary" Clicked="@ConfirmDelete" Size="Size.ExtraLarge">
+                Submit Quiz
+            </Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter]
+    public EventCallback Clicked { get; set; }
+
+    private Modal? modalRef;
+
+    private async Task ConfirmDelete()
+    {
+        HideModal();
+        await Clicked.InvokeAsync();
+    }
+
+    private void ShowModal()
+    {
+        if (modalRef != null) modalRef.Show();
+    }
+    private void HideModal()
+    {
+        if (modalRef != null) modalRef.Hide();
+    }
+
+}

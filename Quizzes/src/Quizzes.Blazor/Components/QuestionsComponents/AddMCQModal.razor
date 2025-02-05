@@ -1,0 +1,160 @@
+﻿@using global::Quizzes.Questions
+@using System.ComponentModel.DataAnnotations;
+@using Volo.Abp.Application.Dtos
+@inject NavigationManager Navigation
+@inherits AbpCrudPageBase<IQuizAppService, QuizDto, int, PagedAndSortedResultRequestDto, CreateUpdateQuizDto>
+
+@if (mcq == null) return;
+
+<Button Color="Color.Light" Clicked="@ShowModal">
+    <Icon Name="IconName.Add" /> Add MCQ Question
+</Button>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Add MCQ Question</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+
+        <ModalBody>
+            <Validations @ref="validations" Model="@mcq" ValidateOnLoad="false" Mode="ValidationMode.Auto">
+                <Field>
+                    <Validation>
+                        <FieldLabel Flex="Flex.JustifyContent.Between">
+                            Question Title
+                        </FieldLabel>
+                        <TextEdit Placeholder="Enter question title..." @bind-Text="@mcq.Title">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </TextEdit>
+                    </Validation>
+                </Field>
+
+                <FieldLabel>Choices</FieldLabel>
+                <Field Flex="Flex.JustifyContent.Start">
+                    <Validation>
+                        <FieldLabel>a.</FieldLabel>
+                        <TextEdit Placeholder="Enter First Choice..." @bind-Text="@mcq.Choice1">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </TextEdit>
+                    </Validation>
+                </Field>
+                <Field Flex="Flex.JustifyContent.Start">
+                    <Validation>
+                        <FieldLabel>b.</FieldLabel>
+                        <TextEdit Placeholder="Enter Second Choice..." @bind-Text="@mcq.Choice2">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </TextEdit>
+                    </Validation>
+                </Field>
+                <Field Flex="Flex.JustifyContent.Start">
+                    <Validation>
+                        <FieldLabel>c.</FieldLabel>
+                        <TextEdit Placeholder="Enter Third Choice..." @bind-Text="@mcq.Choice3">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </TextEdit>
+                    </Validation>
+                </Field>
+                <Field Flex="Flex.JustifyContent.Start">
+                    <Validation>
+                        <FieldLabel>d.</FieldLabel>
+                        <TextEdit Placeholder="Enter Fourth Choice..." @bind-Text="@mcq.Choice4">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </TextEdit>
+                    </Validation>
+                </Field>
+
+                <Field>
+                    <Validation>
+                        <Span>Correct Answer</Span>
+                        <TextEdit Placeholder="Enter Correct Answer..." @bind-Text="@mcq.CorrectAnswer">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </TextEdit>
+                    </Validation>
+                </Field>
+            </Validations>
+        </ModalBody>
+
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@AddMCQ">Add Question</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+<SnackbarStack @ref="snackbarStack" />
+
+
+@code {
+    [Parameter]
+    public QuizDto? quiz { set; get; }
+
+    private CreateUpdateMCQDto mcq = new CreateUpdateMCQDto();
+
+    Modal? modalRef;
+    Validations? validations;
+    SnackbarStack? snackbarStack;
+
+    private async Task AddMCQ()
+    {
+        if (mcq == null || validations == null || quiz == null) return;
+
+        if (await validations.ValidateAll())
+        {
+            MCQDto mcqDto = new MCQDto
+                {
+                    Title = mcq.Title,
+                    Choice1 = mcq.Choice1,
+                    Choice2 = mcq.Choice2,
+                    Choice3 = mcq.Choice3,
+                    Choice4 = mcq.Choice4,
+                    CorrectAnswer = mcq.CorrectAnswer
+                };
+
+            await AppService.AddMCQAsync(quiz.Id, mcqDto);
+
+            ShowSnackbarOnSuccess();
+            HideModal();
+            await Task.Delay(1200);
+            Navigation.Refresh();
+        }
+        else
+        {
+            ShowSnackbarOnFail();
+        }
+    }
+
+    private void ShowModal()
+    {
+        if (modalRef != null) modalRef.Show();
+    }
+    private void HideModal()
+    {
+        if (modalRef != null) modalRef.Hide();
+    }
+
+    private void ShowSnackbarOnSuccess()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Question Added Successfully.",
+            SnackbarColor.Success,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+
+    private void ShowSnackbarOnFail()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Question To Add Quiz.",
+            SnackbarColor.Danger,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+
+
+}

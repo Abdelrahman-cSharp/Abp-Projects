@@ -1,0 +1,70 @@
+﻿@using global::Quizzes.Questions
+@using Volo.Abp.Application.Dtos
+@inject NavigationManager Navigation
+@inherits AbpCrudPageBase<ITFAppService, TFDto, int, PagedAndSortedResultRequestDto, CreateUpdateTFDto>
+
+
+@if (newtf == null || tf == null) return;
+<Card TextSize="TextSize.Heading4">
+    <CardHeader>
+        <Text Class="unselectable">@newtf.Title</Text>
+    </CardHeader>
+
+    <CardBody>
+        <RadioGroup TValue="string" CheckedValueChanged="@Submit" Buttons="true" Color="Color.Light">
+            <ChildContent>
+                <Radio Value="@("True")">
+                    <Span TextColor="TextColor.Success">True</Span>
+                </Radio>
+
+                <Radio Value="@("False")">
+                    <Span TextColor="TextColor.Danger">False</Span>
+                </Radio>
+            </ChildContent>
+        </RadioGroup>
+    </CardBody>
+</Card>
+
+
+
+@code {
+    [Parameter]
+    public TFDto? tf { get; set; }
+
+    private CreateUpdateTFDto newtf = new CreateUpdateTFDto();
+
+    private string selectedAnswerstr = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        if (tf == null) return;
+
+        newtf = new CreateUpdateTFDto
+            {
+                Title = tf.Title,
+                CorrectAnswer = tf.CorrectAnswer
+            };
+    }
+
+    private async void Submit(string value)
+    {
+        if (tf == null) return;
+        // Cast the selectedAnswerstr to selectedAnswer => str->bool
+        // It's a problem with Blazorise.Select Component doesn't accept nullable bool
+        selectedAnswerstr = value;
+        if (selectedAnswerstr == "True") newtf.SelectedAnswer = true;
+        else if (selectedAnswerstr == "False") newtf.SelectedAnswer = false;
+        else newtf.SelectedAnswer = null;
+
+        await AppService.UpdateAsync(tf.Id, newtf);
+    }
+
+
+
+
+
+
+
+}
+
+

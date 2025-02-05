@@ -1,0 +1,139 @@
+﻿@using global::Quizzes.Questions
+@using System.ComponentModel.DataAnnotations;
+@using Volo.Abp.Application.Dtos
+@inject NavigationManager Navigation
+@inherits AbpCrudPageBase<IQuizAppService, QuizDto, int, PagedAndSortedResultRequestDto, CreateUpdateQuizDto>
+
+@if (tf == null) return;
+
+@* <Button Color="Color.Light" Clicked="@ShowModal" TextSize="TextSize.Heading6">
+    <Icon Name="IconName.Add" /> Add T/F Question
+</Button> *@
+
+<Button Color="Color.Light" Clicked="@ShowModal">
+    <Icon Name="IconName.Add" /> Add T/F Question
+</Button>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Add T/F Question</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+
+        <ModalBody>
+            <Validations @ref="validations" Model="@tf" ValidateOnLoad="false" Mode="ValidationMode.Auto">
+                <Field>
+                    <Validation>
+                        <FieldLabel Flex="Flex.JustifyContent.Between">
+                            Question Title
+                        </FieldLabel>
+                        <TextEdit Placeholder="Enter quistion title..." @bind-Text="@tf.Title">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </TextEdit>
+                    </Validation>
+                </Field>
+
+                <Field>
+                    <Validation>
+                        <FieldLabel>Correct Answer</FieldLabel>
+                        <RadioGroup TValue="bool" @bind-CheckedValue="@tf.CorrectAnswer" Buttons="true" Color="Color.Light">
+                            <ChildContent>
+                                <Radio Value="true">
+                                    <Span TextColor="TextColor.Success">
+                                        True
+                                    </Span>
+                                </Radio>
+                                <Radio Value="false">
+                                    <Span TextColor="TextColor.Danger">
+                                        False
+                                    </Span>
+                                </Radio>
+                            </ChildContent>
+                            <Feedback> <ValidationError /> </Feedback>
+                        </RadioGroup>
+                    </Validation>
+                </Field>
+            </Validations>
+        </ModalBody>
+
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@AddTF">Add Question</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+<SnackbarStack @ref="snackbarStack" />
+
+
+@code {
+    [Parameter]
+    public QuizDto? quiz { set; get; }
+
+    private CreateUpdateTFDto tf = new CreateUpdateTFDto();
+
+    Modal? modalRef;
+    Validations? validations;
+    SnackbarStack? snackbarStack;
+
+
+
+    private async Task AddTF()
+    {
+        if (tf == null || validations == null || quiz == null) return;
+
+        if (await validations.ValidateAll())
+        {
+            TFDto tfDto = new TFDto
+                {
+                    Title = tf.Title,
+                    CorrectAnswer = tf.CorrectAnswer
+                };
+
+            await AppService.AddTFAsync(quiz.Id, tfDto);
+
+            ShowSnackbarOnSuccess();
+            HideModal();
+            await Task.Delay(1200);
+            Navigation.Refresh();
+        }
+        else
+        {
+            ShowSnackbarOnFail();
+        }
+    }
+
+    private void ShowModal()
+    {
+        if (modalRef != null) modalRef.Show();
+    }
+    private void HideModal()
+    {
+        if (modalRef != null) modalRef.Hide();
+    }
+
+    private void ShowSnackbarOnSuccess()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Question Added Successfully.",
+            SnackbarColor.Success,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+
+    private void ShowSnackbarOnFail()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Question To Add Quiz.",
+            SnackbarColor.Danger,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+
+}

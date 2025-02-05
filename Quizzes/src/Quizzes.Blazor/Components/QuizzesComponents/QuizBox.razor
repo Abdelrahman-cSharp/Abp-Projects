@@ -1,0 +1,117 @@
+﻿@using global::Quizzes.Questions
+
+@if (quiz == null) return;
+
+
+<Button Color="@color" Class="@($"quiz-box {background}")" Clicked="ShowModal" Outline="@isOutline">
+    <Text TextSize="TextSize.Heading5" TextColor="TextColor.Dark" TextWeight="TextWeight.Bold"
+          TextOverflow="TextOverflow.Wrap" Overflow="Overflow.Auto">
+        @quiz.Title
+    </Text>
+    <Div Flex="Flex.Row" TextSize="TextSize.ExtraSmall">
+        <Text>
+            <strong>@quiz.Attempts</strong>/@quiz.AttemptsLimit Attempts
+        </Text>
+        @if (quiz.Attempts - quiz.AttemptsLimit == 0)
+        {
+            <Badge Color="Color.Danger">Quiz Over</Badge>
+        }
+    </Div>
+    <Div TextSize="TextSize.Heading1" TextWeight="TextWeight.Bold" TextColor="TextColor.Dark" Flex="Flex.AlignSelf.Center">
+
+        @if (quiz.Attempts == 0)
+        {
+            <Div>Start</Div>
+        }
+        else
+        {
+            <Div>@percentage%</Div>
+        }
+    </Div>
+    <Div Flex="Flex.Column" TextSize="TextSize.ExtraSmall">
+        <Div Flex="Flex.AlignSelf.Center">
+            <strong>@quiz.CorrectAnswersCount</strong>/@questionsCount Correct Questions
+            <br />
+            TimeLimit: @TimeLimit
+        </Div>
+    </Div>
+</Button>
+
+
+@code {
+    [Parameter]
+    public QuizDto? quiz { get; set; }
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    private TimeSpan TimeLimit;
+    private int questionsCount;
+    private int percentage;
+
+    private Color? color;
+    private bool isOutline = true;
+    private string background = string.Empty;
+    protected override void OnInitialized()
+    {
+        if (quiz == null) return;
+        TimeLimit = new TimeSpan(0, quiz.TimeLimitMin, 0);
+        questionsCount = quiz.MCQs.Count + quiz.TFs.Count;
+        percentage = (int)((float)quiz.CorrectAnswersCount / questionsCount * 100);
+
+        SetBoxColors();
+    }
+
+    private async Task ShowModal()
+    {
+        await OnClick.InvokeAsync(null);
+    }
+
+    private void SetBoxColors()
+    {
+        if (quiz == null) return;
+
+        if (quiz.Attempts == 0) { color = Color.Primary; background = "start"; }
+        else if (percentage >= 90) { color = Color.Success; isOutline = false; }
+        else if (percentage >= 75) { color = Color.Success; background = "very-good"; }
+        else if (percentage >= 50) { color = Color.Warning; background = "good"; }
+        else { color = Color.Danger; background = "fail"; }
+    }
+}
+
+
+<style>
+    .quiz-box {
+        width: 170px;
+        height: 220px;
+        border: 3px solid;
+        border-radius: 10px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        margin: 24px;
+        justify-content: space-around;
+        align-items: start;
+        box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+        transition-duration: 0.6s;
+    }
+
+    .excellent {
+        background-color: #059862;
+    }
+
+    .very-good {
+        background-color: #c9ffeb;
+    }
+
+    .good {
+        background-color: #ffe5bc;
+    }
+
+    .fail {
+        background-color: #ffccd0;
+    }
+
+    .start {
+        background-color: #bbc9ff;
+    }
+</style>

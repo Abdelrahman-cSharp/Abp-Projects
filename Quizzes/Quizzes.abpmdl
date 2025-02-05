@@ -1,0 +1,101 @@
+{
+  "template": "app",
+  "imports": {
+    "Volo.Abp.LeptonXLiteTheme": {
+      "version": "4.0.2",
+      "isInstalled": true
+    },
+    "Volo.Abp.Account": {
+      "version": "9.0.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.OpenIddict": {
+      "version": "9.0.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.Identity": {
+      "version": "9.0.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.TenantManagement": {
+      "version": "9.0.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.SettingManagement": {
+      "version": "9.0.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.PermissionManagement": {
+      "version": "9.0.1",
+      "isInstalled": true
+    },
+    "Volo.Abp.FeatureManagement": {
+      "version": "9.0.1",
+      "isInstalled": true
+    }
+  },
+  "folders": {
+    "items": {
+      "src": {},
+      "test": {}
+    }
+  },
+  "packages": {
+    "Quizzes.Application": {
+      "path": "src/Quizzes.Application/Quizzes.Application.abppkg",
+      "folder": "src"
+    },
+    "Quizzes.Application.Tests": {
+      "path": "test/Quizzes.Application.Tests/Quizzes.Application.Tests.abppkg",
+      "folder": "test"
+    },
+    "Quizzes.Domain.Shared": {
+      "path": "src/Quizzes.Domain.Shared/Quizzes.Domain.Shared.abppkg",
+      "folder": "src"
+    },
+    "Quizzes.Application.Contracts": {
+      "path": "src/Quizzes.Application.Contracts/Quizzes.Application.Contracts.abppkg",
+      "folder": "src"
+    },
+    "Quizzes.HttpApi": {
+      "path": "src/Quizzes.HttpApi/Quizzes.HttpApi.abppkg",
+      "folder": "src"
+    },
+    "Quizzes.HttpApi.Client": {
+      "path": "src/Quizzes.HttpApi.Client/Quizzes.HttpApi.Client.abppkg",
+      "folder": "src"
+    },
+    "Quizzes.EntityFrameworkCore.Tests": {
+      "path": "test/Quizzes.EntityFrameworkCore.Tests/Quizzes.EntityFrameworkCore.Tests.abppkg",
+      "folder": "test"
+    },
+    "Quizzes.EntityFrameworkCore": {
+      "path": "src/Quizzes.EntityFrameworkCore/Quizzes.EntityFrameworkCore.abppkg",
+      "folder": "src"
+    },
+    "Quizzes.TestBase": {
+      "path": "test/Quizzes.TestBase/Quizzes.TestBase.abppkg",
+      "folder": "test"
+    },
+    "Quizzes.Domain.Tests": {
+      "path": "test/Quizzes.Domain.Tests/Quizzes.Domain.Tests.abppkg",
+      "folder": "test"
+    },
+    "Quizzes.HttpApi.Client.ConsoleTestApp": {
+      "path": "test/Quizzes.HttpApi.Client.ConsoleTestApp/Quizzes.HttpApi.Client.ConsoleTestApp.abppkg",
+      "folder": "test"
+    },
+    "Quizzes.DbMigrator": {
+      "path": "src/Quizzes.DbMigrator/Quizzes.DbMigrator.abppkg",
+      "folder": "src"
+    },
+    "Quizzes.Blazor": {
+      "path": "src/Quizzes.Blazor/Quizzes.Blazor.abppkg",
+      "folder": "src"
+    },
+    "Quizzes.Domain": {
+      "path": "src/Quizzes.Domain/Quizzes.Domain.abppkg",
+      "folder": "src"
+    }
+  }
+}

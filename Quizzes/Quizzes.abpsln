@@ -1,0 +1,42 @@
+{
+  "id": "1ab8aa8f-7a7e-430b-9747-e0a422bab4e8",
+  "template": "app",
+  "versions": {
+    "AbpFramework": "9.0.1",
+    "AbpStudio": "0.9.16",
+    "TargetDotnetFramework": "net9.0"
+  },
+  "modules": {
+    "Quizzes": {
+      "path": "Quizzes.abpmdl"
+    }
+  },
+  "runProfiles": {
+    "Default": {
+      "path": "etc/abp-studio/run-profiles/Default.abprun.json"
+    }
+  },
+  "options": {
+    "httpRequests": {
+      "ignoredUrls": [
+        "^/metrics$"
+      ]
+    }
+  },
+  "creatingStudioConfiguration": {
+    "template": "app",
+    "createdAbpStudioVersion": "0.9.16",
+    "tiered": "false",
+    "multiTenancy": "true",
+    "includeTests": "true",
+    "uiFramework": "blazor-server",
+    "databaseProvider": "ef",
+    "databaseManagementSystem": "sqlserver",
+    "separateTenantSchema": "false",
+    "theme": "leptonx-lite",
+    "themeStyle": "",
+    "mobileFramework": "none",
+    "publicWebsite": "false",
+    "socialLogin": ""
+  }
+}

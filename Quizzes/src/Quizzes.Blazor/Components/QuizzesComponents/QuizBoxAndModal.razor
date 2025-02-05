@@ -1,0 +1,81 @@
+﻿@using global::Quizzes.Blazor.Components.QuestionsComponents
+@using global::Quizzes.Questions
+@inject NavigationManager Navigation
+
+
+@if (quiz == null) return;
+
+<QuizBox quiz="@quiz" OnClick="ShowModal" />
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle TextWeight="TextWeight.Bold" TextSize="TextSize.Heading3">
+                @quiz.Title
+            </ModalTitle>
+            <UpdateQuizModal quiz="@quiz" />
+        </ModalHeader>
+
+        <ModalBody TextSize="TextSize.Large">
+            <Div Flex="Flex.JustifyContent.Between">
+                <Span>Questions: @(@quiz.MCQs.Count + @quiz.TFs.Count)</Span>
+                <Button Color="Color.Light" Clicked="@GoToUpdateQuestion" Size="Size.Small">
+                    <Icon Name="IconName.Edit" /> Update Questions
+                </Button>
+            </Div>
+            Time Limit: @quiz.TimeLimitMin
+            <br />
+            Attempts allowed: @(@quiz.AttemptsLimit - @quiz.Attempts)
+        </ModalBody>
+
+        <ModalFooter Flex="Flex.Column">
+            <Div>
+                <Button Color="Color.Primary" Clicked="@StartQuiz" TextSize="TextSize.Heading4 " Flex="Flex.AlignSelf.Center"
+                        disabled="@((quiz.MCQs.Count + quiz.TFs.Count == 0) || (quiz.AttemptsLimit - quiz.Attempts <= 0))">
+                    Start Quiz
+                </Button>
+                <Div TextSize="TextSize.ExtraSmall" TextColor="TextColor.Danger" Flex="Flex.AlignSelf.Center">
+                    @if (quiz.MCQs.Count + quiz.TFs.Count == 0)
+                    {
+                        <Div>
+                            No Questions Yet.
+                        </Div>
+                    }
+                    else if (quiz.AttemptsLimit - quiz.Attempts <= 0)
+                    {
+                        <Div>
+                            Quiz Over
+                        </Div>
+                    }
+                </Div>
+            </Div>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+@code {
+    [Parameter]
+    public QuizDto? quiz { get; set; }
+
+    private Modal? modalRef;
+
+    private void StartQuiz()
+    {
+        if (quiz == null) return;
+
+        if (quiz.AttemptsLimit - quiz.Attempts >= 0)
+            Navigation.NavigateTo($"/quizzes/{quiz.Id}", forceLoad: true);
+
+    }
+
+    private void GoToUpdateQuestion()
+    {
+        if (quiz == null) return;
+        Navigation.NavigateTo($"/quizzes/edit-questions/{quiz.Id}", forceLoad: true);
+    }
+
+    private void ShowModal()
+    {
+        if (modalRef != null) modalRef.Show();
+    }
+}

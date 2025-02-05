@@ -1,0 +1,139 @@
+﻿@page "/quizzes/{QuizId:int}"
+@using Quizzes.Blazor.Components.QuestionsComponents
+@using Volo.Abp.Application.Dtos
+@using global::Quizzes.Questions
+@inject NavigationManager Navigation
+@inherits AbpCrudPageBase<IQuizAppService, QuizDto, int, PagedAndSortedResultRequestDto, CreateUpdateQuizDto>
+
+@if (quiz == null) return;
+
+<Layout Height="Height.Is100">
+    <LayoutHeader Background="Background.White" Padding="Padding.Is3">
+        <Div Flex="Flex.JustifyContent.Between">
+            <Heading TextColor="TextColor.Dark" TextSize="TextSize.Heading1" TextWeight="TextWeight.Bold">
+                @quiz.Title
+            </Heading>
+        </Div>
+    </LayoutHeader>
+
+    <LayoutContent Background="Background.Transparent" Height="Height.Is100" Overflow="Overflow.Auto">
+        @if (quiz.MCQs.Count != 0)
+        {
+            <Divider />
+            <Heading TextSize="TextSize.Heading3" TextColor="TextColor.Dark">Choose one of the Choices:-</Heading>
+            @foreach (var mcq in quiz.MCQs)
+            {
+                <ChooseMCQComponent mcq="@mcq" />
+            }
+        }
+        @if (quiz.TFs.Count != 0)
+        {
+            <Divider />
+            <Heading TextSize="TextSize.Heading3" TextColor="TextColor.Dark">Choose True/False:-</Heading>
+            @foreach (var tf in quiz.TFs)
+            {
+                <ChooseTFComponent tf="@tf" />
+            }
+        }
+    </LayoutContent>
+
+    <LayoutFooter Flex="Flex.AlignSelf.Center">
+        <SubmitModal Clicked="@SubmitQuiz" />
+    </LayoutFooter>
+
+    <Div Position="Position.Fixed.Bottom.Is0.Start.Is50.Translate.MiddleX"
+    Background="Background.Dark" Padding="Padding.Is2" Border="Border.Rounded">
+        <Text TextColor="TextColor.Light" TextSize="TextSize.Heading5">
+            @($"{TimeRemaining.Minutes:D2}:{TimeRemaining.Seconds:D2}")
+        </Text>
+    </Div>
+</Layout>
+
+
+
+@code {
+    [Parameter]
+    public int QuizId { get; set; }
+
+    public QuizDto? quiz { get; set; }
+    private CreateUpdateQuizDto newQuiz = new CreateUpdateQuizDto();
+
+    private TimeSpan TimeRemaining;
+    private System.Timers.Timer? Timer;
+    int correctAnswersCount = 0;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        quiz = await AppService.GetAsync(QuizId);
+
+        if (quiz.AttemptsLimit - quiz.Attempts <= 0)
+            Navigation.NavigateTo($"/quizzes", forceLoad: true);
+
+
+        newQuiz = new CreateUpdateQuizDto
+            {
+                Title = quiz.Title,
+                TimeLimitMin = quiz.TimeLimitMin,
+                AttemptsLimit = quiz.AttemptsLimit,
+                Attempts = quiz.Attempts + 1
+            };
+
+        await AppService.UpdateAsync(quiz.Id, newQuiz);
+
+        TimeRemaining = TimeSpan.FromMinutes(quiz.TimeLimitMin);
+        StartTimer();
+    }
+
+    private async void SubmitQuiz()
+    {
+        if (quiz == null) return;
+        quiz = await AppService.GetAsync(QuizId);
+        newQuiz.CorrectAnswersCount = CalculateNewCorrectAnswersCount(quiz);
+
+        await AppService.UpdateAsync(quiz.Id, newQuiz);
+        Navigation.NavigateTo("/quizzes");
+    }
+
+    private int CalculateNewCorrectAnswersCount(QuizDto quiz)
+    {
+        foreach (var mcq in quiz.MCQs)
+        {
+            if (mcq.SelectedAnswer == mcq.CorrectAnswer)
+                correctAnswersCount += 1;
+            Console.WriteLine($"{mcq.Title}, Correct: {mcq.CorrectAnswer} ,Selelcted: {mcq.SelectedAnswer}");
+        }
+        foreach (var tf in quiz.TFs)
+        {
+            if (tf.SelectedAnswer == tf.CorrectAnswer)
+                correctAnswersCount += 1;
+            Console.WriteLine($"{tf.Title}, Correct: {tf.CorrectAnswer} ,Selelcted: {tf.SelectedAnswer}");
+
+        }
+
+        return correctAnswersCount;
+    }
+
+    private void StartTimer()
+    {
+        Timer = new System.Timers.Timer(1000);
+        Timer.Elapsed += (sender, args) =>
+        {
+            if (TimeRemaining.TotalSeconds > 0)
+            {
+                TimeRemaining = TimeRemaining.Subtract(TimeSpan.FromSeconds(1));
+                InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                Timer?.Stop();
+                InvokeAsync(SubmitQuiz);
+            }
+        };
+        Timer.AutoReset = true;
+        Timer.Start();
+    }
+    public void Dispose()
+    {
+        Timer?.Dispose();
+    }
+}

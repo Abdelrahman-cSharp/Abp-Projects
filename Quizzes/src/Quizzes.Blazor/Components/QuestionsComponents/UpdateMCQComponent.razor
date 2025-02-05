@@ -1,0 +1,164 @@
+﻿@using Blazorise.Snackbar
+@using global::Quizzes.Questions
+@using Volo.Abp.Application.Dtos
+@inject NavigationManager Navigation
+@inherits AbpCrudPageBase<IMCQAppService, MCQDto, int, PagedAndSortedResultRequestDto, CreateUpdateMCQDto>
+
+
+@if (newmcq == null || mcq == null) return;
+<Card>
+    <CardBody>
+        <Validations @ref="validations" Model="@newmcq" ValidateOnLoad="false" Mode="ValidationMode.Auto">
+            <Field>
+                <Validation>
+                    <FieldLabel Flex="Flex.JustifyContent.Between">
+                        Question Title
+                        <DeleteModal Message="Delete Question" Clicked="@DeleteQuestion" />
+                    </FieldLabel>
+                    <TextEdit Placeholder="Enter question title..." @bind-Text="@newmcq.Title">
+                        <Feedback> <ValidationError /> </Feedback>
+                    </TextEdit>
+                </Validation>
+            </Field>
+
+            <FieldLabel>Choices</FieldLabel>
+            <Field Flex="Flex.JustifyContent.Start">
+                <Validation>
+                    <FieldLabel>a.</FieldLabel>
+                    <TextEdit Placeholder="Enter First Choice..." @bind-Text="@newmcq.Choice1">
+                        <Feedback> <ValidationError /> </Feedback>
+                    </TextEdit>
+                </Validation>
+            </Field>
+            <Field Flex="Flex.JustifyContent.Start">
+                <Validation>
+                    <FieldLabel>b.</FieldLabel>
+                    <TextEdit Placeholder="Enter Second Choice..." @bind-Text="@newmcq.Choice2">
+                        <Feedback> <ValidationError /> </Feedback>
+                    </TextEdit>
+                </Validation>
+            </Field>
+            <Field Flex="Flex.JustifyContent.Start">
+                <Validation>
+                    <FieldLabel>c.</FieldLabel>
+                    <TextEdit Placeholder="Enter Third Choice..." @bind-Text="@newmcq.Choice3">
+                        <Feedback> <ValidationError /> </Feedback>
+                    </TextEdit>
+                </Validation>
+            </Field>
+            <Field Flex="Flex.JustifyContent.Start">
+                <Validation>
+                    <FieldLabel>d.</FieldLabel>
+                    <TextEdit Placeholder="Enter Fourth Choice..." @bind-Text="@newmcq.Choice4">
+                        <Feedback> <ValidationError /> </Feedback>
+                    </TextEdit>
+                </Validation>
+            </Field>
+
+            <Field>
+                <Validation>
+                    <Span>Correct Answer</Span>
+                    <TextEdit Placeholder="Enter Correct Answer..." @bind-Text="@newmcq.CorrectAnswer">
+                        <Feedback> <ValidationError /> </Feedback>
+                    </TextEdit>
+                </Validation>
+            </Field>
+        </Validations>
+    </CardBody>
+
+    <CardFooter>
+        <Button Color="Color.Secondary" Clicked="@UpdateMCQ">Update Question</Button>
+    </CardFooter>
+</Card>
+
+<SnackbarStack @ref="snackbarStack" />
+
+
+
+@code {
+    [Parameter]
+    public MCQDto? mcq { get; set; }
+
+    private CreateUpdateMCQDto newmcq = new CreateUpdateMCQDto();
+
+    Validations? validations;
+    SnackbarStack? snackbarStack;
+
+    protected override void OnParametersSet()
+    {
+        if (mcq == null) return;
+
+        newmcq = new CreateUpdateMCQDto
+            {
+                Title = mcq.Title,
+                Choice1 = mcq.Choice1,
+                Choice2 = mcq.Choice2,
+                Choice3 = mcq.Choice3,
+                Choice4 = mcq.Choice4,
+                CorrectAnswer = mcq.CorrectAnswer
+            };
+
+    }
+
+    private async Task UpdateMCQ()
+    {
+        if (mcq == null || validations == null) return;
+
+        if (await validations.ValidateAll())
+        {
+            await AppService.UpdateAsync(mcq.Id, newmcq);
+            ShowSnackbarOnSuccessUpdate();
+        }
+        else
+        {
+            ShowSnackbarOnFailUpdate();
+        }
+    }
+
+    private async Task DeleteQuestion()
+    {
+        if (mcq == null) return;
+
+        await AppService.DeleteAsync(mcq.Id);
+
+        ShowSnackbarOnSuccessDelete();
+        await Task.Delay(1200);
+        Navigation.Refresh();
+    }
+
+    private void ShowSnackbarOnSuccessUpdate()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Question Updated Successfully.",
+            SnackbarColor.Success,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+    private void ShowSnackbarOnFailUpdate()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Failed To Update Question.",
+            SnackbarColor.Danger,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+    private void ShowSnackbarOnSuccessDelete()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Question Deleted Successfully.",
+            SnackbarColor.Success,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+
+}
+

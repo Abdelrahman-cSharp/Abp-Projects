@@ -1,0 +1,120 @@
+﻿@using global::Quizzes.Questions
+@using Volo.Abp.Application.Dtos
+@inject NavigationManager Navigation
+@inherits AbpCrudPageBase<IQuizAppService, QuizDto, int, PagedAndSortedResultRequestDto, CreateUpdateQuizDto>
+
+<Button Color="Color.Light" Clicked="@ShowModal" Size="Size.ExtraLarge" TextSize="TextSize.Heading4">
+    <Icon Name="IconName.Add" /> Add Quiz
+</Button>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Add Quiz</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+
+        <ModalBody>
+            <Validations @ref="validations" Model="@quiz" ValidateOnLoad="false" Mode="ValidationMode.Auto">
+                <Field>
+                    <Validation>
+                        <FieldLabel>Title</FieldLabel>
+                        <TextEdit Placeholder="Enter quiz title..." @bind-Text="quiz.Title">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </TextEdit>
+                    </Validation>
+                </Field>
+
+                <Field>
+                    <Validation>
+                        <FieldLabel>
+                            Time Limit <Span TextSize="TextSize.Small" Style="opacity: 0.7;">(min)</Span>
+                        </FieldLabel>
+                        <NumericPicker @bind-Value="quiz.TimeLimitMin" ModifyValueOnWheel WheelOn="NumericWheelOn.Hover">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </NumericPicker>
+                    </Validation>
+                </Field>
+
+                <Field>
+                    <Validation>
+                        <FieldLabel>Attempts Limit</FieldLabel>
+                        <NumericPicker @bind-Value="quiz.AttemptsLimit" ModifyValueOnWheel WheelOn="NumericWheelOn.Hover">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </NumericPicker>
+                    </Validation>
+                </Field>
+            </Validations>
+        </ModalBody>
+
+        <ModalFooter Flex="Flex.AlignSelf.Center">
+            <Button Color="Color.Secondary" Clicked="@AddQuiz" TextSize="TextSize.Heading4">Add Quiz</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+<SnackbarStack @ref="snackbarStack" />
+
+
+@code {
+    private CreateUpdateQuizDto quiz = new CreateUpdateQuizDto();
+
+    Modal? modalRef;
+    Validations? validations;
+    SnackbarStack? snackbarStack;
+
+
+
+
+    private async Task AddQuiz()
+    {
+        if (quiz == null || validations == null) return;
+        if (await validations.ValidateAll())
+        {
+            await AppService.CreateAsync(quiz);
+
+            ShowSnackbarOnSuccess();
+            HideModal();
+            await Task.Delay(1200);
+            Navigation.Refresh();
+        }
+        else
+        {
+            ShowSnackbarOnFail();
+        }
+    }
+
+    private void ShowModal()
+    {
+        if (modalRef != null) modalRef.Show();
+    }
+    private void HideModal()
+    {
+        if (modalRef != null) modalRef.Hide();
+    }
+
+    private void ShowSnackbarOnSuccess()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Quiz Added Successfully.",
+            SnackbarColor.Success,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+
+    private void ShowSnackbarOnFail()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Failed To Add Quiz.",
+            SnackbarColor.Danger,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+
+}

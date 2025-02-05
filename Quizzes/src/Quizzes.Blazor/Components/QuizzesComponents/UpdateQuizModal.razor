@@ -1,0 +1,167 @@
+﻿@using global::Quizzes.Blazor.Components.QuestionsComponents
+@using Volo.Abp.Application.Dtos
+@using global::Quizzes.Questions
+@inject NavigationManager Navigation
+@inherits AbpCrudPageBase<IQuizAppService, QuizDto, int, PagedAndSortedResultRequestDto, CreateUpdateQuizDto>
+
+@if (quiz == null) return;
+<Button Color="Color.Secondary" Clicked="@ShowModal" TextSize="TextSize.Heading6">
+    <Icon Name="IconName.Edit" /> Update Quiz
+</Button>
+
+<Modal @ref="modalRef">
+    <ModalContent Centered>
+        <ModalHeader Flex="Flex.JustifyContent.Between">
+            <ModalTitle>Update Quiz</ModalTitle>
+            <Div>
+                <DeleteModal Message="Delete Quiz" Clicked="@DeleteQuiz" />
+                <CloseButton />
+            </Div>
+        </ModalHeader>
+
+        <ModalBody>
+            <Validations @ref="validations" Model="@updatedQuiz" ValidateOnLoad="false" Mode="ValidationMode.Auto">
+                <Field>
+                    <Validation>
+                        <FieldLabel>Title</FieldLabel>
+                        <TextEdit Placeholder="@updatedQuiz.Title" @bind-Text="updatedQuiz.Title">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </TextEdit>
+                    </Validation>
+                </Field>
+
+                <Field>
+                    <Validation>
+                        <FieldLabel>
+                            Time Limit <span style="font-size: 0.8em; opacity: 0.7;">(min)</span>
+                        </FieldLabel>
+                        <NumericPicker @bind-Value="updatedQuiz.TimeLimitMin" ModifyValueOnWheel WheelOn="NumericWheelOn.Hover">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </NumericPicker>
+                    </Validation>
+                </Field>
+
+                <Field>
+                    <Validation>
+                        <FieldLabel>Attempts Limit</FieldLabel>
+                        <NumericPicker @bind-Value="updatedQuiz.AttemptsLimit" ModifyValueOnWheel WheelOn="NumericWheelOn.Hover">
+                            <Feedback> <ValidationError /> </Feedback>
+                        </NumericPicker>
+                    </Validation>
+                </Field>
+            </Validations>
+        </ModalBody>
+
+        <ModalFooter Flex="Flex.AlignSelf.Center">
+            <Button Color="Color.Secondary" Clicked="@UpdateQuiz">Update Quiz</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
+<SnackbarStack @ref="snackbarStack" />
+
+@code {
+    [Parameter]
+    public QuizDto? quiz { get; set; }
+    private CreateUpdateQuizDto updatedQuiz = new CreateUpdateQuizDto();
+
+    Modal? modalRef;
+    Validations? validations;
+    SnackbarStack? snackbarStack;
+
+    protected override void OnParametersSet()
+    {
+        if (quiz != null)
+        {
+            updatedQuiz = new CreateUpdateQuizDto
+                {
+                    Title = quiz.Title,
+                    TimeLimitMin = quiz.TimeLimitMin,
+                    AttemptsLimit = quiz.AttemptsLimit,
+                    Attempts = quiz.Attempts,
+                    CorrectAnswersCount = quiz.CorrectAnswersCount
+
+                };
+        }
+    }
+
+    private async Task UpdateQuiz()
+    {
+        if (quiz == null || validations == null) return;
+
+        if (await validations.ValidateAll())
+        {
+
+            await AppService.UpdateAsync(quiz.Id, updatedQuiz);
+
+            HideModal();
+            ShowSnackbarOnSuccessUpdate();
+            await Task.Delay(1200);
+            Navigation.Refresh();
+        }
+        else
+        {
+            ShowSnackbarOnFailUpdate();
+        }
+    }
+
+    private async Task DeleteQuiz()
+    {
+        if (quiz == null || validations == null) return;
+
+        HideModal();
+
+        await AppService.DeleteAsync(quiz.Id);
+
+        ShowSnackbarOnSuccessDelete();
+        await Task.Delay(1200);
+        Navigation.Refresh();
+    }
+
+
+    private void ShowModal()
+    {
+        if (modalRef != null) modalRef.Show();
+    }
+    private void HideModal()
+    {
+        if (modalRef != null) modalRef.Hide();
+    }
+
+    private void ShowSnackbarOnSuccessUpdate()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Quiz Updated Successfully.",
+            SnackbarColor.Success,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+    private void ShowSnackbarOnFailUpdate()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Failed To Update Quiz.",
+            SnackbarColor.Danger,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+    private void ShowSnackbarOnSuccessDelete()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Quiz Deleted Successfully.",
+            SnackbarColor.Success,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+
+
+}
+

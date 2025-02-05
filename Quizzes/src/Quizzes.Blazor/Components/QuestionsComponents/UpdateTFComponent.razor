@@ -1,0 +1,138 @@
+﻿@using global::Quizzes.Questions
+@using Volo.Abp.Application.Dtos
+@inject NavigationManager Navigation
+@inherits AbpCrudPageBase<ITFAppService, TFDto, int, PagedAndSortedResultRequestDto, CreateUpdateTFDto>
+
+
+@if (newtf == null || tf == null) return;
+<Card>
+    <CardBody>
+        <Validations @ref="validations" Model="@newtf" ValidateOnLoad="false" Mode="ValidationMode.Auto">
+            <Field>
+                <Validation>
+                    <FieldLabel Flex="Flex.JustifyContent.Between">
+                        Question Title
+                        <DeleteModal Message="Delete Question" Clicked="@DeleteQuestion" />
+                    </FieldLabel>
+                    <TextEdit Placeholder="Enter quistion title..." @bind-Text="@newtf.Title">
+                        <Feedback> <ValidationError /> </Feedback>
+                    </TextEdit>
+                </Validation>
+            </Field>
+
+            <Field>
+                <Validation>
+                    <FieldLabel>Correct Answer</FieldLabel>
+                    <RadioGroup TValue="bool" @bind-CheckedValue="@newtf.CorrectAnswer" Buttons="true" Color="Color.Light">
+                        <ChildContent>
+                            <Radio Value="true">
+                                <Span TextColor="TextColor.Success">
+                                    True
+                                </Span>
+                            </Radio>
+                            <Radio Value="false">
+                                <Span TextColor="TextColor.Danger">
+                                    False
+                                </Span>
+                            </Radio>
+                        </ChildContent>
+                        <Feedback> <ValidationError /> </Feedback>
+                    </RadioGroup>
+                </Validation>
+            </Field>
+        </Validations>
+    </CardBody>
+
+    <CardFooter>
+        <Button Color="Color.Secondary" Clicked="@Updatetf">Update Question</Button>
+    </CardFooter>
+</Card>
+
+<SnackbarStack @ref="snackbarStack" />
+
+
+@code {
+    [Parameter]
+    public TFDto? tf { get; set; }
+
+    private CreateUpdateTFDto newtf = new CreateUpdateTFDto();
+
+    Validations? validations;
+    SnackbarStack? snackbarStack;
+
+    protected override void OnParametersSet()
+    {
+        if (tf != null)
+        {
+            newtf = new CreateUpdateTFDto
+                {
+                    Title = tf.Title,
+                    CorrectAnswer = tf.CorrectAnswer
+                };
+        }
+    }
+
+    private async Task Updatetf()
+    {
+        if (tf == null || validations == null) return;
+
+        if (await validations.ValidateAll())
+        {
+            await AppService.UpdateAsync(tf.Id, newtf);
+            ShowSnackbarOnSuccessUpdate();
+        }
+        else
+        {
+            ShowSnackbarOnFailUpdate();
+        }
+    }
+
+    private async Task DeleteQuestion()
+    {
+        if (tf == null || validations == null) return;
+
+        await AppService.DeleteAsync(tf.Id);
+
+        ShowSnackbarOnSuccessDelete();
+        await Task.Delay(1200);
+        Navigation.Refresh();
+
+    }
+
+    private void ShowSnackbarOnSuccessUpdate()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Question Updated Successfully.",
+            SnackbarColor.Success,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+    private void ShowSnackbarOnFailUpdate()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Failed To Update Question.",
+            SnackbarColor.Danger,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+    private void ShowSnackbarOnSuccessDelete()
+    {
+        if (snackbarStack == null) return;
+
+        snackbarStack.PushAsync
+        (
+            "Question Deleted Successfully.",
+            SnackbarColor.Success,
+            options => { options.IntervalBeforeClose = 1200; }
+        );
+    }
+
+}
+
+
